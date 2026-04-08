@@ -1,0 +1,33 @@
+{
+  "semi": true,
+  "tabWidth": 2,
+  "printWidth": 100,
+  "singleQuote": false,
+  "trailingComma": "es5",
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "auto",
+  "vueIndentScriptAndStyle": false,
+  "overrides": [
+    {
+      "files": "*.{js,ts,vue}",
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false
+      }
+    },
+    {
+      "files": "*.{scss,less,css}",
+      "options": {
+        "singleQuote": false
+      }
+    },
+    {
+      "files": "*.{json,md,yml}",
+      "options": {
+        "tabWidth": 2,
+        "useTabs": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+// ===================================
+// 通用样式
+// ===================================
+
+@use 'variables.scss' as *;
+@use 'mixins.scss' as *;
+
+// 屏幕阅读器隐藏
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// 字体工具类
+.text-primary { color: $primary-color; }
+.text-success { color: $success-color; }
+.text-warning { color: $warning-color; }
+.text-error { color: $error-color; }
+.text-info { color: $info-color; }
+.text-secondary { color: $text-secondary; }
+.text-disabled { color: $text-disabled; }
+.text-bold { font-weight: 600; }
+
+// 背景工具类
+.bg-white { background-color: $white; }
+.bg-page { background-color: $bg-page; }
+.bg-primary-light { background-color: $bg-primary; }
+.bg-success-light { background-color: lighten($success-color, 50%); }
+.bg-warning-light { background-color: lighten($warning-color, 45%); }
+.bg-error-light { background-color: lighten($error-color, 45%); }
+
+// 间距工具类
+$spacing-values: (
+  0: 0,
+  xs: $spacing-xs,
+  sm: $spacing-sm,
+  md: $spacing-md,
+  lg: $spacing-lg,
+  xl: $spacing-xl,
+  xxl: $spacing-xxl
+);
+
+@each $size, $value in $spacing-values {
+  .m#{$size} { margin: $value; }
+  .mt#{$size} { margin-top: $value; }
+  .mr#{$size} { margin-right: $value; }
+  .mb#{$size} { margin-bottom: $value; }
+  .ml#{$size} { margin-left: $value; }
+  
+  .mx#{$size} { margin-left: $value; margin-right: $value; }
+  .my#{$size} { margin-top: $value; margin-bottom: $value; }
+  
+  .p#{$size} { padding: $value; }
+  .pt#{$size} { padding-top: $value; }
+  .pr#{$size} { padding-right: $value; }
+  .pb#{$size} { padding-bottom: $value; }
+  .pl#{$size} { padding-left: $value; }
+  
+  .px#{$size} { padding-left: $value; padding-right: $value; }
+  .py#{$size} { padding-top: $value; padding-bottom: $value; }
+}
+
+// 文本对齐
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+// 字体粗细
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-bold { font-weight: 600; }
+
+// 字体大小
+.text-sm { font-size: $font-size-sm; }
+.text-base { font-size: $font-size-base; }
+.text-lg { font-size: $font-size-lg; }
+.text-xl { font-size: $font-size-xl; }
+.text-xxl { font-size: $font-size-xxl; }
+
+// 容器
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+}
+
+// 卡片
+.card {
+  @include card();
+  
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-md;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid $border-color-lighter;
+    
+    .title {
+      font-size: $font-size-lg;
+      font-weight: 600;
+      color: $text-primary;
+    }
+  }
+  
+  &-body {
+    // 卡片内容
+  }
+}
+
+// 分割线
+.divider {
+  height: 1px;
+  background-color: $border-color-lighter;
+  margin: $spacing-lg 0;
+}
+
+// 表格操作区
+.table-actions {
+  @include flex-between;
+  margin-bottom: $spacing-md;
+  
+  .left-actions,
+  .right-actions {
+    display: flex;
+    gap: $spacing-sm;
+    align-items: center;
+  }
+}
+
+// 分页器居中
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+// 表单工具行（搜索区和按钮组）
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+// 空状态
+.empty-state {
+  @include empty-state(400px);
+}
+
+// 加载状态
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xxl;
+  color: $text-secondary;
+}
+
+// 标签 Tag
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: $font-size-sm;
+  border-radius: $border-radius-sm;
+  white-space: nowrap;
+  
+  &.status-success {
+    color: $success-dark;
+    background-color: lighten($success-color, 50%);
+  }
+  
+  &.status-warning {
+    color: $warning-dark;
+    background-color: lighten($warning-color, 50%);
+  }
+  
+  &.status-error {
+    color: $error-dark;
+    background-color: lighten($error-color, 50%);
+  }
+  
+  &.status-info {
+    color: $primary-dark;
+    background-color: lighten($primary-color, 50%);
+  }
+}
+
+// 头像
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: $bg-primary;
+  color: $primary-color;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  
+  &-lg {
+    width: 48px;
+    height: 48px;
+    font-size: $font-size-base;
+  }
+  
+  &-sm {
+    width: 24px;
+    height: 24px;
+    font-size: $font-size-sm;
+  }
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+  }
+}
+
+// 工具按钮（图标按钮）
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: $text-secondary;
+  cursor: pointer;
+  border-radius: $border-radius-base;
+  
+  &:hover {
+    color: $primary-color;
+    background: $primary-bg;
+  }
+  
+  &:disabled {
+    color: $text-disabled;
+    cursor: not-allowed;
+    background: transparent;
+  }
+}

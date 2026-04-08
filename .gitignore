@@ -1,0 +1,46 @@
+# macOS
+.DS_Store
+
+# Logs and runtime files
+logs/
+.run/
+*.log
+
+# Temporary local files
+.tmp_thesis_extract.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Backend local environment and data
+backend/.venv/
+backend/db.sqlite3
+backend/media/
+backend/staticfiles/
+
+# Frontend local environment and build artifacts
+frontend-admin/.env
+frontend-admin/.env.local
+frontend-admin/.openclaw/
+frontend-admin/node_modules/
+frontend-admin/dist/
+frontend-admin/dist-ssr/
+frontend-mall/.env
+frontend-mall/.env.local
+frontend-mall/node_modules/
+frontend-mall/dist/
+frontend-mall/dist-ssr/
+
+# Editor files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

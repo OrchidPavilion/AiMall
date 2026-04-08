@@ -1,0 +1,369 @@
+// ===================================
+// GhostFit 管理后台 主样式文件
+// ===================================
+
+// 1. 导入 SCSS 变量（必须首先导入）
+@use 'variables.scss' as *;
+
+// 2. 导入重置样式
+@use 'reset.scss';
+
+// 3. 导入混合
+@use 'mixins.scss' as mixins;
+
+// 4. 导入通用样式
+@use 'common.scss';
+
+// 5. 导入 Element Plus 主题覆盖
+@use 'theme/element.scss';
+
+// 6. 全局样式
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: $font-family;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $text-primary;
+  background-color: $bg-page;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  html,
+  body {
+    font-size: 14px;
+  }
+
+  .el-dialog {
+    width: 94% !important;
+    margin-top: 5vh !important;
+  }
+
+  .el-drawer.rtl,
+  .el-drawer.ltr {
+    width: 94% !important;
+    max-width: 94% !important;
+    top: 5vh !important;
+    height: 90vh !important;
+    max-height: 90vh !important;
+  }
+
+  .el-table {
+    font-size: 12px;
+  }
+
+  .el-table .cell {
+    line-height: 1.35;
+  }
+
+  .el-card__body {
+    padding: 12px !important;
+  }
+
+  .el-card__header {
+    padding: 10px 12px !important;
+  }
+
+  .el-form-item__label {
+    line-height: 20px;
+    white-space: normal;
+  }
+
+  .el-form {
+    .el-row {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+  }
+
+  .el-button + .el-button {
+    margin-left: 8px;
+  }
+
+  .el-page-header {
+    padding: 4px 0;
+  }
+
+  .el-pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 8px;
+  }
+
+  .el-tabs__header {
+    margin-bottom: 8px !important;
+  }
+
+  .el-descriptions__label,
+  .el-descriptions__content {
+    padding: 8px !important;
+  }
+}
+
+// 全局卡片样式
+.page-card {
+  background: $white;
+  border-radius: $border-radius-base;
+  box-shadow: $shadow-sm;
+  padding: $spacing-lg;
+}
+
+// 页面标题
+.page-title {
+  font-size: $font-size-xl;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid $border-color-lighter;
+}
+
+// 操作栏
+.action-bar {
+  @include mixins.flex-between;
+  margin-bottom: $spacing-md;
+  
+  .title {
+    font-size: $font-size-base;
+    font-weight: 600;
+    color: $text-primary;
+  }
+  
+  .actions {
+    display: flex;
+    gap: $spacing-sm;
+  }
+}
+
+// 搜索表单
+.search-form {
+  background-color: $bg-page;
+  padding: $spacing-md;
+  border-radius: $border-radius-base;
+  margin-bottom: $spacing-md;
+  
+  .el-form-item {
+    margin-bottom: $spacing-sm;
+  }
+  
+  .form-actions {
+    margin-top: $spacing-md;
+    padding-top: $spacing-md;
+    border-top: 1px solid $border-color-light;
+  }
+}
+
+// 表格区域
+.table-container {
+  background: $white;
+  border-radius: $border-radius-base;
+  box-shadow: $shadow-sm;
+  
+  .table-header {
+    padding: $spacing-md;
+    border-bottom: 1px solid $border-color-lighter;
+  }
+  
+  .table-body {
+    padding: 0 $spacing-md;
+  }
+  
+  .table-footer {
+    padding: $spacing-md;
+    border-top: 1px solid $border-color-lighter;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+// 详情页布局
+.detail-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: $spacing-lg;
+  
+  @include mixins.mobile {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail-sidebar {
+    background: $white;
+    border-radius: $border-radius-base;
+    box-shadow: $shadow-sm;
+    padding: $spacing-md;
+    
+    .sidebar-title {
+      font-size: $font-size-base;
+      font-weight: 600;
+      color: $text-primary;
+      margin-bottom: $spacing-md;
+      padding-bottom: $spacing-sm;
+      border-bottom: 1px solid $border-color-lighter;
+    }
+  }
+  
+  .detail-content {
+    background: $white;
+    border-radius: $border-radius-base;
+    box-shadow: $shadow-sm;
+    padding: $spacing-lg;
+  }
+}
+
+// 业务特定样式
+
+// 金额显示（分转元）
+.amount {
+  font-family: $font-family-code;
+  color: $error-color;
+  font-weight: 600;
+  
+  &.positive {
+    color: $success-color;
+  }
+  
+  &.negative {
+    color: $error-color;
+  }
+}
+
+// 订单状态
+.order-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  
+  &.PENDING { background: lighten($warning-color, 45%); color: $warning-dark; }
+  &.PAID { background: lighten($primary-color, 45%); color: $primary-dark; }
+  &.SHIPPED { background: lighten($info-color, 45%); color: $primary-dark; }
+  &.COMPLETED { background: lighten($success-color, 45%); color: $success-dark; }
+  &.REFUNDED { background: lighten($text-secondary, 45%); color: $text-secondary; }
+  &.CANCELLED { background: lighten($error-color, 45%); color: $error-dark; }
+}
+
+// 商品状态
+.product-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  
+  &.ON_SHELF { background: lighten($success-color, 45%); color: $success-dark; }
+  &.OFF_SHELF { background: lighten($text-secondary, 45%); color: $text-secondary; }
+  &.DRAFT { background: lighten($warning-color, 45%); color: $warning-dark; }
+}
+
+// 客户等级
+.customer-level {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  
+  &.REGULAR { background: lighten($text-secondary, 45%); color: $text-secondary; }
+  &.VIP { background: lighten($warning-color, 45%); color: $warning-dark; }
+  &.SVIP { background: lighten($error-color, 45%); color: $error-dark; }
+}
+
+// 订单状态
+.order-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  
+  &.PENDING { background: lighten($warning-color, 45%); color: $warning-dark; }
+  &.PAID { background: lighten($primary-color, 45%); color: $primary-dark; }
+  &.SHIPPED { background: lighten($info-color, 45%); color: $primary-dark; }
+  &.COMPLETED { background: lighten($success-color, 45%); color: $success-dark; }
+  &.REFUNDED { background: lighten($text-secondary, 45%); color: $text-secondary; }
+  &.CANCELLED { background: lighten($error-color, 45%); color: $error-dark; }
+}
+
+// 商品状态
+.product-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  
+  &.ON_SHELF { background: lighten($success-color, 45%); color: $success-dark; }
+  &.OFF_SHELF { background: lighten($text-secondary, 45%); color: $text-secondary; }
+  &.DRAFT { background: lighten($warning-color, 45%); color: $warning-dark; }
+}
+
+// 客户等级
+.customer-level {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  
+  &.REGULAR { background: lighten($text-secondary, 45%); color: $text-secondary; }
+  &.VIP { background: lighten($warning-color, 45%); color: $warning-dark; }
+  &.SVIP { background: lighten($error-color, 45%); color: $error-dark; }
+}
+
+// 手机号脱敏
+.phone-masked {
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+// 页面动画
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-fade-enter-active {
+  transition: all 0.2s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+// NProgress 进度条样式覆盖
+#nprogress {
+  .bar {
+    background: $primary-color !important;
+    height: 3px !important;
+  }
+  
+  .peg {
+    box-shadow: 0 0 10px $primary-color, 0 0 5px $primary-color !important;
+  }
+  
+  .spinner-icon {
+    border-top-color: $primary-color !important;
+    border-left-color: $primary-color !important;
+  }
+}
