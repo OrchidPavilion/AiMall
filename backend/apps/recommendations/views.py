@@ -28,7 +28,7 @@ from .services import (
     run_experiment,
     get_data_analysis_overview,
     generate_experiment_behavior_replay,
-    generate_thesis_experiment_sample_data,
+    generate_recommendation_experiment_sample_data,
     reset_recommendation_workspace,
 )
 
@@ -141,7 +141,7 @@ class AdminRecommendationBehaviorReplayView(APIView):
         actions_per_customer = int(request.data.get("actions_per_customer") or 40)
         seed = int(request.data.get("seed") or 20260408)
         clear_all_behaviors = str(request.data.get("clear_all_behaviors", "1")) != "0"
-        result = generate_thesis_experiment_sample_data(
+        result = generate_recommendation_experiment_sample_data(
             target_customers=target_customers,
             actions_per_customer=actions_per_customer,
             seed=seed,

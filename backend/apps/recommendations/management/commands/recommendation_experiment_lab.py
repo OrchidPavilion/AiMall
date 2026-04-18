@@ -6,7 +6,7 @@ from apps.recommendations.models import RecommendationExperimentRun
 from apps.recommendations.serializers import RecommendationSettingSerializer
 from apps.recommendations.services import (
     build_interaction_dataset,
-    generate_thesis_experiment_sample_data,
+    generate_recommendation_experiment_sample_data,
     get_recommendation_setting,
     run_experiment,
     verify_online_algorithm_switch,
@@ -14,27 +14,27 @@ from apps.recommendations.services import (
 
 
 class Command(BaseCommand):
-    help = "清空并重建论文实验样本，验证线上推荐算法切换，并执行三算法实验。"
+    help = "清空并重建推荐实验样本，验证线上推荐算法切换，并执行三算法实验。"
 
     def add_arguments(self, parser):
-        parser.add_argument("--customers", type=int, default=60, help="生成的论文样本用户数")
-        parser.add_argument("--actions", type=int, default=60, help="每个论文样本用户生成的行为数")
+        parser.add_argument("--customers", type=int, default=60, help="生成的实验样本用户数")
+        parser.add_argument("--actions", type=int, default=60, help="每个实验样本用户生成的行为数")
         parser.add_argument("--total-behaviors", type=int, default=None, help="生成精确总行为数，并随机分配到各用户")
         parser.add_argument("--seed", type=int, default=20260408, help="随机种子，保证可重复")
         parser.add_argument(
             "--clear-all-behaviors",
             action="store_true",
-            help="先清空全库行为/购物车/推荐，再生成论文实验样本",
+            help="先清空全库行为/购物车/推荐，再生成推荐实验样本",
         )
         parser.add_argument(
             "--clear-all-customers",
             action="store_true",
-            help="先清空全库客户信息及其行为/购物车/推荐，再生成论文实验样本",
+            help="先清空全库客户信息及其行为/购物车/推荐，再生成推荐实验样本",
         )
         parser.add_argument(
             "--product-only-behaviors",
             action="store_true",
-            help="生成的行为全部指向具体商品，适合论文中的用户-商品访问记录实验",
+            help="生成的行为全部指向具体商品，适合用户-商品访问记录实验",
         )
         parser.add_argument(
             "--skip-seed",
@@ -47,7 +47,7 @@ class Command(BaseCommand):
             help="跳过三算法实验，只做样本生成与线上算法切换验证",
         )
         parser.add_argument("--probe-top-n", type=int, default=5, help="验证线上算法切换时查看前N条推荐")
-        parser.add_argument("--experiment-name", default="论文三算法对比实验", help="保存实验记录时使用的名称")
+        parser.add_argument("--experiment-name", default="三算法对比实验", help="保存实验记录时使用的名称")
 
     def handle(self, *args, **options):
         payload = {
@@ -59,7 +59,7 @@ class Command(BaseCommand):
         }
 
         if not options["skip_seed"]:
-            seed_result = generate_thesis_experiment_sample_data(
+            seed_result = generate_recommendation_experiment_sample_data(
                 target_customers=options["customers"],
                 actions_per_customer=options["actions"],
                 total_behaviors=options["total_behaviors"],
@@ -70,7 +70,7 @@ class Command(BaseCommand):
                 product_only_behaviors=options["product_only_behaviors"],
             )
             if not seed_result.get("ok"):
-                raise CommandError(seed_result.get("message") or "论文实验样本生成失败")
+                raise CommandError(seed_result.get("message") or "推荐实验样本生成失败")
             payload["seed_result"] = seed_result
 
         payload["dataset_summary"] = build_interaction_dataset(for_experiment=False).data_summary

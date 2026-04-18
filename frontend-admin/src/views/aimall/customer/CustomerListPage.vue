@@ -43,7 +43,7 @@
       <el-tab-pane label="智能推荐" name="recommendations">
         <div class="pane-pad">
           <div class="rec-head">
-            <span>三种算法推荐对比（用于论文实验展示）</span>
+            <span>三种算法推荐对比</span>
             <el-button size="small" @click="detailRow && loadRecommendationCompare(detailRow.id)" :disabled="!detailRow" :loading="recCompareLoading">刷新对比</el-button>
           </div>
           <el-tabs v-model="activeRecAlgTab" class="rec-tabs">

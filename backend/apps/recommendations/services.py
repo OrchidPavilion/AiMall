@@ -37,10 +37,10 @@ CATEGORY_EXPANSION_LIMIT = 8
 SEARCH_DECAY_FACTORS = (1.0, 0.88, 0.76, 0.64, 0.52, 0.4, 0.28, 0.16)
 CATEGORY_DECAY_FACTORS = (1.0, 0.92, 0.84, 0.76, 0.68, 0.6, 0.52, 0.44)
 
-THESIS_SAMPLE_CUSTOMER_PREFIX = "论文样本用户"
-THESIS_SAMPLE_CUSTOMER_HOBBY = "推荐系统论文实验样本"
-THESIS_SAMPLE_CUSTOMER_ADDRESS = "AUTO_GENERATED_RECOMMENDATION_THESIS_SAMPLE"
-THESIS_SAMPLE_EXTRA_FLAG = "thesis_generated_sample"
+EXPERIMENT_SAMPLE_CUSTOMER_PREFIX = "实验样本用户"
+EXPERIMENT_SAMPLE_CUSTOMER_HOBBY = "推荐系统实验样本"
+EXPERIMENT_SAMPLE_CUSTOMER_ADDRESS = "AUTO_GENERATED_RECOMMENDATION_EXPERIMENT_SAMPLE"
+EXPERIMENT_SAMPLE_EXTRA_FLAG = "experiment_generated_sample"
 
 
 def get_recommendation_setting() -> RecommendationSetting:
@@ -837,11 +837,11 @@ def get_data_analysis_overview():
     }
 
 
-def _generated_thesis_customer_queryset():
+def _generated_experiment_customer_queryset():
     return Customer.objects.filter(
-        name__startswith=THESIS_SAMPLE_CUSTOMER_PREFIX,
-        hobby=THESIS_SAMPLE_CUSTOMER_HOBBY,
-        address=THESIS_SAMPLE_CUSTOMER_ADDRESS,
+        name__startswith=EXPERIMENT_SAMPLE_CUSTOMER_PREFIX,
+        hobby=EXPERIMENT_SAMPLE_CUSTOMER_HOBBY,
+        address=EXPERIMENT_SAMPLE_CUSTOMER_ADDRESS,
     )
 
 
@@ -872,8 +872,8 @@ def reset_recommendation_workspace(
         Customer.objects.all().delete()
         generated_customer_deleted = all_customer_deleted
     elif clear_generated_customers:
-        generated_customer_deleted = _generated_thesis_customer_queryset().count()
-        _generated_thesis_customer_queryset().delete()
+        generated_customer_deleted = _generated_experiment_customer_queryset().count()
+        _generated_experiment_customer_queryset().delete()
     return {
         "behaviors_deleted": behavior_deleted,
         "cart_items_deleted": cart_deleted,
@@ -883,8 +883,8 @@ def reset_recommendation_workspace(
     }
 
 
-def clear_generated_thesis_sample_data(*, clear_carts: bool = True, clear_recommendations: bool = True):
-    generated_customer_ids = list(_generated_thesis_customer_queryset().values_list("id", flat=True))
+def clear_generated_experiment_sample_data(*, clear_carts: bool = True, clear_recommendations: bool = True):
+    generated_customer_ids = list(_generated_experiment_customer_queryset().values_list("id", flat=True))
     if not generated_customer_ids:
         return {
             "behaviors_deleted": 0,
@@ -898,13 +898,13 @@ def clear_generated_thesis_sample_data(*, clear_carts: bool = True, clear_recomm
     behavior_deleted = behavior_qs.count()
     cart_deleted = cart_qs.count() if clear_carts else 0
     recommendation_deleted = recommendation_qs.count() if clear_recommendations else 0
-    customers_deleted = _generated_thesis_customer_queryset().count()
+    customers_deleted = _generated_experiment_customer_queryset().count()
     behavior_qs.delete()
     if clear_carts:
         cart_qs.delete()
     if clear_recommendations:
         recommendation_qs.delete()
-    _generated_thesis_customer_queryset().delete()
+    _generated_experiment_customer_queryset().delete()
     return {
         "behaviors_deleted": behavior_deleted,
         "cart_items_deleted": cart_deleted,
@@ -920,7 +920,7 @@ def _root_category_for_product(product: Product):
     return root
 
 
-def generate_thesis_experiment_sample_data(
+def generate_recommendation_experiment_sample_data(
     *,
     target_customers: int = 60,
     actions_per_customer: int = 60,
@@ -948,7 +948,7 @@ def generate_thesis_experiment_sample_data(
             clear_all_customers=clear_all_customers,
         )
     elif clear_existing_generated:
-        reset_summary = clear_generated_thesis_sample_data(clear_carts=True, clear_recommendations=True)
+        reset_summary = clear_generated_experiment_sample_data(clear_carts=True, clear_recommendations=True)
 
     products = list(
         Product.objects.filter(status="ON_SHELF")
@@ -956,7 +956,7 @@ def generate_thesis_experiment_sample_data(
         .order_by("-sales_count", "-view_count", "-sort", "-id")
     )
     if len(products) < 20:
-        return {"ok": False, "message": "上架商品数量不足，至少需要20个商品才能生成论文实验样本"}
+        return {"ok": False, "message": "上架商品数量不足，至少需要20个商品才能生成推荐实验样本"}
 
     by_root: dict[int, list[Product]] = defaultdict(list)
     by_leaf: dict[int, list[Product]] = defaultdict(list)
@@ -968,7 +968,7 @@ def generate_thesis_experiment_sample_data(
         by_leaf[product.category_id].append(product)
     available_root_ids = [root_id for root_id, rows in by_root.items() if rows]
     if len(available_root_ids) < 2:
-        return {"ok": False, "message": "商品一级分类过少，无法构建有区分度的论文实验样本"}
+        return {"ok": False, "message": "商品一级分类过少，无法构建有区分度的推荐实验样本"}
 
     rng = np.random.default_rng(seed)
     now = timezone.now()
@@ -980,7 +980,7 @@ def generate_thesis_experiment_sample_data(
         min_actions = 12
         base_actions = np.full(target_customers, min_actions, dtype=int)
         remaining_actions = total_behaviors - int(base_actions.sum())
-        # 访问量随机分布，但固定随机种子保证同一批论文实验数据可复现。
+        # 访问量随机分布，但固定随机种子保证同一批实验数据可复现。
         random_tail = rng.multinomial(remaining_actions, np.ones(target_customers) / target_customers)
         actions_by_customer = (base_actions + random_tail).tolist()
     else:
@@ -988,11 +988,11 @@ def generate_thesis_experiment_sample_data(
 
     def create_customer(index: int) -> Customer:
         customer = Customer(
-            name=f"{THESIS_SAMPLE_CUSTOMER_PREFIX}{index:03d}",
+            name=f"{EXPERIMENT_SAMPLE_CUSTOMER_PREFIX}{index:03d}",
             phone=f"1888{index:07d}",
             age=int(rng.integers(20, 46)),
-            hobby=THESIS_SAMPLE_CUSTOMER_HOBBY,
-            address=THESIS_SAMPLE_CUSTOMER_ADDRESS,
+            hobby=EXPERIMENT_SAMPLE_CUSTOMER_HOBBY,
+            address=EXPERIMENT_SAMPLE_CUSTOMER_ADDRESS,
             last_active_at=now,
         )
         customer.set_password("123456")
@@ -1020,7 +1020,7 @@ def generate_thesis_experiment_sample_data(
                     behavior_type = "VIEW_PRODUCT"
                     source_page = "PRODUCT_DETAIL" if rng.random() > 0.35 else "PRODUCT_LIST"
                     extra_data = {
-                        THESIS_SAMPLE_EXTRA_FLAG: True,
+                        EXPERIMENT_SAMPLE_EXTRA_FLAG: True,
                         "batch_no": batch_no,
                         "seed": seed,
                     }
@@ -1028,7 +1028,7 @@ def generate_thesis_experiment_sample_data(
                     behavior_type = "ADD_TO_CART"
                     source_page = "PRODUCT_DETAIL"
                     extra_data = {
-                        THESIS_SAMPLE_EXTRA_FLAG: True,
+                        EXPERIMENT_SAMPLE_EXTRA_FLAG: True,
                         "batch_no": batch_no,
                         "seed": seed,
                     }
@@ -1036,7 +1036,7 @@ def generate_thesis_experiment_sample_data(
                     behavior_type = "PURCHASE"
                     source_page = "CART"
                     extra_data = {
-                        THESIS_SAMPLE_EXTRA_FLAG: True,
+                        EXPERIMENT_SAMPLE_EXTRA_FLAG: True,
                         "batch_no": batch_no,
                         "seed": seed,
                         "item_ids": [product.id],
@@ -1070,7 +1070,7 @@ def generate_thesis_experiment_sample_data(
                     "target_name": root_categories[root_id].name,
                     "source_page": "HOME",
                     "extra_data": {
-                        THESIS_SAMPLE_EXTRA_FLAG: True,
+                        EXPERIMENT_SAMPLE_EXTRA_FLAG: True,
                         "batch_no": batch_no,
                         "seed": seed,
                     },
@@ -1091,7 +1091,7 @@ def generate_thesis_experiment_sample_data(
                     "target_name": category_product.category.name,
                     "source_page": "HOME",
                     "extra_data": {
-                        THESIS_SAMPLE_EXTRA_FLAG: True,
+                        EXPERIMENT_SAMPLE_EXTRA_FLAG: True,
                         "batch_no": batch_no,
                         "seed": seed,
                     },
@@ -1116,7 +1116,7 @@ def generate_thesis_experiment_sample_data(
                         "target_name": product.name,
                         "source_page": "PRODUCT_DETAIL" if rng.random() > 0.5 else "PRODUCT_LIST",
                         "extra_data": {
-                            THESIS_SAMPLE_EXTRA_FLAG: True,
+                            EXPERIMENT_SAMPLE_EXTRA_FLAG: True,
                             "batch_no": batch_no,
                             "seed": seed,
                         },
@@ -1135,7 +1135,7 @@ def generate_thesis_experiment_sample_data(
                             "target_name": product.name,
                             "source_page": "PRODUCT_DETAIL",
                             "extra_data": {
-                                THESIS_SAMPLE_EXTRA_FLAG: True,
+                                EXPERIMENT_SAMPLE_EXTRA_FLAG: True,
                                 "batch_no": batch_no,
                                 "seed": seed,
                             },
@@ -1160,7 +1160,7 @@ def generate_thesis_experiment_sample_data(
                         "target_name": "、".join(item_names),
                         "source_page": "CART",
                         "extra_data": {
-                            THESIS_SAMPLE_EXTRA_FLAG: True,
+                            EXPERIMENT_SAMPLE_EXTRA_FLAG: True,
                             "batch_no": batch_no,
                             "seed": seed,
                             "item_ids": item_ids,
@@ -1178,7 +1178,7 @@ def generate_thesis_experiment_sample_data(
 
     return {
         "ok": True,
-        "message": "论文实验样本已生成",
+        "message": "推荐实验样本已生成",
         "batch_no": batch_no,
         "seed": seed,
         "customer_count": len(generated_customers),
@@ -1258,7 +1258,7 @@ def verify_online_algorithm_switch(*, customer_id: int | None = None, top_n: int
 
 
 def generate_experiment_behavior_replay(target_customers=24, actions_per_customer=40):
-    # 基于真实商品和真实行为表生成实验行为轨迹，便于快速产出论文图表
+    # 基于真实商品和真实行为表生成实验行为轨迹，便于快速产出分析图表
     now = timezone.now()
     customers = list(Customer.objects.all().order_by("id"))
     while len(customers) < target_customers:

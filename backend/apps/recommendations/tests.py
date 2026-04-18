@@ -13,13 +13,13 @@ from .services import (
     _evaluate_algorithm_on_dataset,
     build_recommendations_for_customer,
     build_interaction_dataset,
-    clear_generated_thesis_sample_data,
-    generate_thesis_experiment_sample_data,
+    clear_generated_experiment_sample_data,
+    generate_recommendation_experiment_sample_data,
     get_recommendation_setting,
     recommend_for_customer_by_algorithm,
-    THESIS_SAMPLE_CUSTOMER_ADDRESS,
-    THESIS_SAMPLE_CUSTOMER_HOBBY,
-    THESIS_SAMPLE_CUSTOMER_PREFIX,
+    EXPERIMENT_SAMPLE_CUSTOMER_ADDRESS,
+    EXPERIMENT_SAMPLE_CUSTOMER_HOBBY,
+    EXPERIMENT_SAMPLE_CUSTOMER_PREFIX,
 )
 
 
@@ -234,14 +234,14 @@ class RecommendationServiceTests(TestCase):
 
         self.assertEqual(mocked.call_args.args[1], "ITEM_CF")
 
-    def test_generated_thesis_sample_data_can_be_regenerated_cleanly(self):
+    def test_generated_experiment_sample_data_can_be_regenerated_cleanly(self):
         category_a = self.create_category("户外")
         category_b = self.create_category("家居")
         for index in range(10):
             self.create_product(f"户外商品{index}", category_a, sales_count=20 - index, view_count=10 + index)
             self.create_product(f"家居商品{index}", category_b, sales_count=30 - index, view_count=5 + index)
 
-        first = generate_thesis_experiment_sample_data(
+        first = generate_recommendation_experiment_sample_data(
             target_customers=4,
             actions_per_customer=14,
             seed=1234,
@@ -253,15 +253,15 @@ class RecommendationServiceTests(TestCase):
         self.assertGreater(first["created_behaviors"], 0)
 
         generated_customers = Customer.objects.filter(
-            name__startswith=THESIS_SAMPLE_CUSTOMER_PREFIX,
-            hobby=THESIS_SAMPLE_CUSTOMER_HOBBY,
-            address=THESIS_SAMPLE_CUSTOMER_ADDRESS,
+            name__startswith=EXPERIMENT_SAMPLE_CUSTOMER_PREFIX,
+            hobby=EXPERIMENT_SAMPLE_CUSTOMER_HOBBY,
+            address=EXPERIMENT_SAMPLE_CUSTOMER_ADDRESS,
         )
         self.assertEqual(generated_customers.count(), 4)
         first_behavior_count = CustomerBehavior.objects.filter(customer__in=generated_customers).count()
         self.assertEqual(first_behavior_count, first["created_behaviors"])
 
-        second = generate_thesis_experiment_sample_data(
+        second = generate_recommendation_experiment_sample_data(
             target_customers=4,
             actions_per_customer=14,
             seed=1234,
@@ -270,21 +270,21 @@ class RecommendationServiceTests(TestCase):
         )
         self.assertTrue(second["ok"])
         generated_customers = Customer.objects.filter(
-            name__startswith=THESIS_SAMPLE_CUSTOMER_PREFIX,
-            hobby=THESIS_SAMPLE_CUSTOMER_HOBBY,
-            address=THESIS_SAMPLE_CUSTOMER_ADDRESS,
+            name__startswith=EXPERIMENT_SAMPLE_CUSTOMER_PREFIX,
+            hobby=EXPERIMENT_SAMPLE_CUSTOMER_HOBBY,
+            address=EXPERIMENT_SAMPLE_CUSTOMER_ADDRESS,
         )
         self.assertEqual(generated_customers.count(), 4)
         second_behavior_count = CustomerBehavior.objects.filter(customer__in=generated_customers).count()
         self.assertEqual(second_behavior_count, second["created_behaviors"])
         self.assertEqual(second_behavior_count, first_behavior_count)
 
-        cleared = clear_generated_thesis_sample_data()
+        cleared = clear_generated_experiment_sample_data()
         self.assertEqual(cleared["generated_customers_deleted"], 4)
         self.assertFalse(
             Customer.objects.filter(
-                name__startswith=THESIS_SAMPLE_CUSTOMER_PREFIX,
-                hobby=THESIS_SAMPLE_CUSTOMER_HOBBY,
-                address=THESIS_SAMPLE_CUSTOMER_ADDRESS,
+                name__startswith=EXPERIMENT_SAMPLE_CUSTOMER_PREFIX,
+                hobby=EXPERIMENT_SAMPLE_CUSTOMER_HOBBY,
+                address=EXPERIMENT_SAMPLE_CUSTOMER_ADDRESS,
             ).exists()
         )

@@ -24,14 +24,14 @@
               <template v-if="!paperShotMode">
                 <el-button @click="loadAll">刷新数据</el-button>
                 <el-button type="danger" plain @click="resetBehaviors">清空行为轨迹</el-button>
-                <el-button @click="generateBehaviorReplay" :loading="replaying">生成论文实验样本</el-button>
+                <el-button @click="generateBehaviorReplay" :loading="replaying">生成实验样本</el-button>
                 <el-button type="primary" @click="runExperiment" :loading="running">运行三算法实验</el-button>
               </template>
             </el-space>
           </div>
         </template>
-        <div class="scope-tip">当前数据分析与实验统计口径：当前库中的有效行为数据。如果通过“生成论文实验样本”创建样本，这些样本会被直接纳入实验统计。</div>
-        <div class="scope-tip">说明：论文实验样本是系统按真实商城访问链路自动生成的可重复数据集，适合在真实访问不足时做论文对比实验。</div>
+        <div class="scope-tip">当前数据分析与实验统计口径：当前库中的有效行为数据。如果通过“生成实验样本”创建样本，这些样本会被直接纳入实验统计。</div>
+        <div class="scope-tip">说明：实验样本是系统按真实商城访问链路自动生成的可重复数据集，适合在真实访问不足时做算法对比实验。</div>
 
         <div class="resizable-flow metrics-flow" v-if="overview.data_summary">
           <ResizableWidthPanel
@@ -645,7 +645,7 @@ const algorithmAnalysisText = computed(() => {
   lines.push(`3. 在推荐排序质量上（NDCG@10），${labels(bestNdcg)}表现最好（${metricAt(bestNdcg, 'ndcg').toFixed(4)}），说明其把更相关商品排在前面的能力更强。`);
   lines.push(`4. 在推荐覆盖率上（Coverage@10），${labels(bestCoverage)}表现最好（${metricAt(bestCoverage, 'coverage').toFixed(4)}），说明它覆盖到的商品更广。`);
   lines.push(`5. 训练耗时最短的是${labels(fastestTrain)}（${Number(ms[fastestTrain]?.train_cost_ms ?? 0).toFixed(2)}ms），推理耗时最短的是${labels(fastestInfer)}（${Number(ms[fastestInfer]?.infer_cost_ms ?? 0).toFixed(2)}ms）。`);
-  lines.push('6. 如果论文重点强调“可解释性”和“系统展示”，建议突出 UserCF/ItemCF 的推荐原因；如果重点强调“稀疏数据稳定性”和“综合效果”，建议突出 ALS。');
+  lines.push('6. 如果分析重点强调“可解释性”和“系统展示”，建议突出 UserCF/ItemCF 的推荐原因；如果重点强调“稀疏数据稳定性”和“综合效果”，建议突出 ALS。');
   lines.push('7. 最终线上推荐算法可按业务目标选择：追求召回/稳定性优先 ALS，追求解释性与实现简单优先 ItemCF 或 UserCF。');
   return lines.join('\n');
 });
@@ -776,13 +776,13 @@ async function generateBehaviorReplay() {
 async function resetBehaviors() {
   try {
     await ElMessageBox.confirm(
-      '确认清空当前所有用户行为轨迹吗？默认会同时清空购物车项、已生成推荐结果以及系统创建的论文样本用户，便于重新生成一套干净的实验数据。',
+      '确认清空当前所有用户行为轨迹吗？默认会同时清空购物车项、已生成推荐结果以及系统创建的实验样本用户，便于重新生成一套干净的实验数据。',
       '清空行为轨迹',
       { type: 'warning', confirmButtonText: '确认清空', cancelButtonText: '取消' },
     );
     const res = await aimallApi.resetRecommendationBehaviors({ clear_carts: 1, clear_recommendations: 1 });
     ElMessage.success(
-      `已清空：行为${res.behaviors_deleted ?? 0}条，购物车${res.cart_items_deleted ?? 0}条，推荐${res.recommendations_deleted ?? 0}条，论文样本用户${res.generated_customers_deleted ?? 0}个`,
+      `已清空：行为${res.behaviors_deleted ?? 0}条，购物车${res.cart_items_deleted ?? 0}条，推荐${res.recommendations_deleted ?? 0}条，实验样本用户${res.generated_customers_deleted ?? 0}个`,
     );
     activeExperiment.value = null;
     exportPayload.value = {};

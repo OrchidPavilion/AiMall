@@ -28,7 +28,7 @@
           <el-radio-button label="ITEM_CF">基于物品的协同过滤</el-radio-button>
           <el-radio-button label="ALS">ALS矩阵分解</el-radio-button>
         </el-radio-group>
-        <div class="tip">该设置控制商城首页和管理后台“刷新推荐”使用的算法。论文实验对比会三种算法并行运行，不受此处限制。</div>
+        <div class="tip">该设置控制商城首页和管理后台“刷新推荐”使用的算法。离线实验对比会三种算法并行运行，不受此处限制。</div>
       </el-form-item>
 
       <el-form-item>

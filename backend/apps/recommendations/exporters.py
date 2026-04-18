@@ -159,7 +159,7 @@ def _algorithm_analysis_plain_text(exp: RecommendationExperimentRun) -> str:
         f"NDCG@10 最好的是 {label(best_ndcg)}（{m(best_ndcg, 'ndcg'):.4f}），说明它把更相关商品排在前面的能力更强。",
         f"Coverage@10 最好的是 {label(best_cov)}（{m(best_cov, 'coverage'):.4f}），说明它覆盖到的商品更广，不容易只推荐少数热门商品。",
         f"训练耗时最短的是 {label(fastest_train)}（{float((ms.get(fastest_train) or {}).get('train_cost_ms', 0)):.2f}ms），推理耗时最短的是 {label(fastest_infer)}（{float((ms.get(fastest_infer) or {}).get('infer_cost_ms', 0)):.2f}ms）。",
-        "如果论文强调可解释性与界面展示，可重点分析 UserCF/ItemCF；如果强调隐式反馈稀疏场景下的稳定性与综合效果，可重点分析 ALS。",
+        "如果分析报告强调可解释性与界面展示，可重点分析 UserCF/ItemCF；如果强调隐式反馈稀疏场景下的稳定性与综合效果，可重点分析 ALS。",
     ])
 
 
@@ -311,7 +311,7 @@ def _compose_chapter4_text(exp: RecommendationExperimentRun) -> str:
         "ALS 通过隐式反馈矩阵分解学习潜在兴趣，在数据稀疏场景下通常具有较好的稳定性与泛化能力。"
     )
     lines.append(
-        "实验图表表明，不同协同过滤算法在召回率、排序质量、覆盖率和计算开销方面存在明显差异，这与论文中对三类模型适用场景的分析基本一致。"
+        "实验图表表明，不同协同过滤算法在召回率、排序质量、覆盖率和计算开销方面存在明显差异，这与前文对三类模型适用场景的分析基本一致。"
     )
     lines.append("")
     lines.append("### 4.4 小结")
