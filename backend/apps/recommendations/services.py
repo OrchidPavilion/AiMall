@@ -851,11 +851,13 @@ def reset_recommendation_workspace(
     clear_carts: bool = True,
     clear_recommendations: bool = True,
     clear_generated_customers: bool = False,
+    clear_all_customers: bool = False,
 ):
     behavior_deleted = 0
     cart_deleted = 0
     recommendation_deleted = 0
     generated_customer_deleted = 0
+    all_customer_deleted = 0
     if clear_behaviors:
         behavior_deleted = CustomerBehavior.objects.count()
         CustomerBehavior.objects.all().delete()
@@ -865,7 +867,11 @@ def reset_recommendation_workspace(
     if clear_recommendations:
         recommendation_deleted = UserRecommendation.objects.count()
         UserRecommendation.objects.all().delete()
-    if clear_generated_customers:
+    if clear_all_customers:
+        all_customer_deleted = Customer.objects.count()
+        Customer.objects.all().delete()
+        generated_customer_deleted = all_customer_deleted
+    elif clear_generated_customers:
         generated_customer_deleted = _generated_thesis_customer_queryset().count()
         _generated_thesis_customer_queryset().delete()
     return {
@@ -873,6 +879,7 @@ def reset_recommendation_workspace(
         "cart_items_deleted": cart_deleted,
         "recommendations_deleted": recommendation_deleted,
         "generated_customers_deleted": generated_customer_deleted,
+        "all_customers_deleted": all_customer_deleted,
     }
 
 
@@ -917,22 +924,28 @@ def generate_thesis_experiment_sample_data(
     *,
     target_customers: int = 60,
     actions_per_customer: int = 60,
+    total_behaviors: int | None = None,
     seed: int = 20260408,
     clear_existing_generated: bool = True,
     clear_all_behaviors: bool = False,
+    clear_all_customers: bool = False,
+    product_only_behaviors: bool = False,
 ):
     if target_customers < 3:
         return {"ok": False, "message": "样本用户数量至少需要3个"}
-    if actions_per_customer < 12:
+    if total_behaviors is not None and total_behaviors < target_customers * 12:
+        return {"ok": False, "message": "总行为数不足，每个用户平均至少需要12条行为"}
+    if total_behaviors is None and actions_per_customer < 12:
         return {"ok": False, "message": "每个用户行为数至少需要12条"}
 
     reset_summary = None
-    if clear_all_behaviors:
+    if clear_all_behaviors or clear_all_customers:
         reset_summary = reset_recommendation_workspace(
             clear_behaviors=True,
             clear_carts=True,
             clear_recommendations=True,
-            clear_generated_customers=True,
+            clear_generated_customers=not clear_all_customers,
+            clear_all_customers=clear_all_customers,
         )
     elif clear_existing_generated:
         reset_summary = clear_generated_thesis_sample_data(clear_carts=True, clear_recommendations=True)
@@ -963,6 +976,15 @@ def generate_thesis_experiment_sample_data(
     behavior_rows: list[CustomerBehavior] = []
     type_counter = Counter()
     generated_customers: list[Customer] = []
+    if total_behaviors is not None:
+        min_actions = 12
+        base_actions = np.full(target_customers, min_actions, dtype=int)
+        remaining_actions = total_behaviors - int(base_actions.sum())
+        # 访问量随机分布，但固定随机种子保证同一批论文实验数据可复现。
+        random_tail = rng.multinomial(remaining_actions, np.ones(target_customers) / target_customers)
+        actions_by_customer = (base_actions + random_tail).tolist()
+    else:
+        actions_by_customer = [actions_per_customer for _ in range(target_customers)]
 
     def create_customer(index: int) -> Customer:
         customer = Customer(
@@ -985,10 +1007,59 @@ def generate_thesis_experiment_sample_data(
 
     for idx in range(1, target_customers + 1):
         customer = create_customer(idx)
+        target_action_count = int(actions_by_customer[idx - 1])
         preferred_roots = list(rng.choice(available_root_ids, size=min(2, len(available_root_ids)), replace=False))
         current_time = now - timezone.timedelta(days=int(rng.integers(10, 31)), hours=int(rng.integers(0, 23)))
+        if product_only_behaviors:
+            for _ in range(target_action_count):
+                root_id = preferred_roots[int(rng.integers(0, len(preferred_roots)))]
+                product_pool = by_root.get(root_id) or products
+                product = product_pool[int(rng.integers(0, len(product_pool)))]
+                behavior_roll = rng.random()
+                if behavior_roll < 0.72:
+                    behavior_type = "VIEW_PRODUCT"
+                    source_page = "PRODUCT_DETAIL" if rng.random() > 0.35 else "PRODUCT_LIST"
+                    extra_data = {
+                        THESIS_SAMPLE_EXTRA_FLAG: True,
+                        "batch_no": batch_no,
+                        "seed": seed,
+                    }
+                elif behavior_roll < 0.94:
+                    behavior_type = "ADD_TO_CART"
+                    source_page = "PRODUCT_DETAIL"
+                    extra_data = {
+                        THESIS_SAMPLE_EXTRA_FLAG: True,
+                        "batch_no": batch_no,
+                        "seed": seed,
+                    }
+                else:
+                    behavior_type = "PURCHASE"
+                    source_page = "CART"
+                    extra_data = {
+                        THESIS_SAMPLE_EXTRA_FLAG: True,
+                        "batch_no": batch_no,
+                        "seed": seed,
+                        "item_ids": [product.id],
+                        "item_names": [product.name],
+                        "item_count": 1,
+                        "total_amount": int(product.default_price or 0),
+                    }
+                current_time = push_behavior(
+                    customer,
+                    {
+                        "behavior_type": behavior_type,
+                        "target_type": "PRODUCT",
+                        "target_id": product.id,
+                        "target_name": product.name,
+                        "source_page": source_page,
+                        "extra_data": extra_data,
+                    },
+                    current_time,
+                )
+            continue
+
         behaviors_created = 0
-        while behaviors_created < actions_per_customer:
+        while behaviors_created < target_action_count:
             root_id = preferred_roots[int(rng.integers(0, len(preferred_roots)))]
             product_pool = by_root.get(root_id) or products
             current_time = push_behavior(
@@ -1007,7 +1078,7 @@ def generate_thesis_experiment_sample_data(
                 current_time,
             )
             behaviors_created += 1
-            if behaviors_created >= actions_per_customer:
+            if behaviors_created >= target_action_count:
                 break
 
             category_product = product_pool[int(rng.integers(0, len(product_pool)))]
@@ -1029,7 +1100,10 @@ def generate_thesis_experiment_sample_data(
             )
             behaviors_created += 1
 
-            session_view_count = max(2, min(int(rng.integers(3, 7)), actions_per_customer - behaviors_created))
+            remaining_action_count = target_action_count - behaviors_created
+            if remaining_action_count <= 0:
+                break
+            session_view_count = min(int(rng.integers(3, 7)), remaining_action_count)
             session_products = list(rng.choice(product_pool, size=session_view_count, replace=len(product_pool) < session_view_count))
             cart_candidates: list[Product] = []
             for product in session_products:
@@ -1050,7 +1124,7 @@ def generate_thesis_experiment_sample_data(
                     current_time,
                 )
                 behaviors_created += 1
-                if rng.random() < 0.38 and behaviors_created < actions_per_customer:
+                if rng.random() < 0.38 and behaviors_created < target_action_count:
                     cart_candidates.append(product)
                     current_time = push_behavior(
                         customer,
@@ -1069,10 +1143,10 @@ def generate_thesis_experiment_sample_data(
                         current_time,
                     )
                     behaviors_created += 1
-                if behaviors_created >= actions_per_customer:
+                if behaviors_created >= target_action_count:
                     break
 
-            if cart_candidates and rng.random() < 0.32 and behaviors_created < actions_per_customer:
+            if cart_candidates and rng.random() < 0.32 and behaviors_created < target_action_count:
                 purchase_count = min(len(cart_candidates), max(1, int(rng.integers(1, min(4, len(cart_candidates) + 1)))))
                 purchase_products = cart_candidates[:purchase_count]
                 item_ids = [product.id for product in purchase_products]
@@ -1109,6 +1183,13 @@ def generate_thesis_experiment_sample_data(
         "seed": seed,
         "customer_count": len(generated_customers),
         "created_behaviors": len(behavior_rows),
+        "product_only_behaviors": product_only_behaviors,
+        "actions_per_customer_summary": {
+            "min": min(actions_by_customer),
+            "max": max(actions_by_customer),
+            "avg": round(sum(actions_by_customer) / len(actions_by_customer), 2),
+            "total": sum(actions_by_customer),
+        },
         "behavior_distribution": dict(type_counter),
         "reset_summary": reset_summary or {},
     }
